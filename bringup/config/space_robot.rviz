@@ -74,12 +74,12 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
           Value: true
-        front_depth_cam_base:
+        front_depth_cam_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        front_depth_cam_link:
+        front_depth_cam_optical_frame:
           Alpha: 1
           Show Axes: false
           Show Trail: false
@@ -112,9 +112,9 @@ Visualization Manager:
         All Enabled: true
         base_link:
           Value: true
-        front_depth_cam_base:
-          Value: true
         front_depth_cam_link:
+          Value: true
+        front_depth_cam_optical_frame:
           Value: true
         link_1:
           Value: true
@@ -132,8 +132,8 @@ Visualization Manager:
           base_link:
             link_1:
               link_2:
-                front_depth_cam_base:
-                  front_depth_cam_link:
+                front_depth_cam_link:
+                  front_depth_cam_optical_frame:
                     {}
       Update Interval: 0
       Value: true
@@ -149,7 +149,7 @@ Visualization Manager:
         Durability Policy: Volatile
         History Policy: Keep Last
         Reliability Policy: Reliable
-        Value: ""
+        Value: /camera/image_raw
       Value: true
   Enabled: true
   Global Options:

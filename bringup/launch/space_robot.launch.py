@@ -1,7 +1,6 @@
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription
 from launch_ros.actions import Node
-from launch_ros.substitutions import FindPackageShare
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import PathJoinSubstitution, LaunchConfiguration, Command, FindExecutable
 from launch.conditions import IfCondition
@@ -22,59 +21,39 @@ def generate_launch_description():
             description="Start RViz2 automatically with this launch file.",
         )
     )
-
-    # Initialize Arguments
     gui = LaunchConfiguration("gui")
+
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            "use_sim_time",
+            default_value="true",
+            description="Use gazebo clock.",
+        )
+    )
+    use_sim_time = LaunchConfiguration("use_sim_time")
 
     pkg_path = get_package_share_directory('space_robot')
     
-    joint_state_publisher = Node(
+    joint_state_publisher_node = Node(
         package='joint_state_publisher',
         executable='joint_state_publisher',
         name='joint_state_publisher',
-        parameters=[{'use_sim_time': False}],
+        parameters=[{'use_sim_time': use_sim_time}],
         # 当其他节点提供 joint_states 时，添加以下行：
         # remappings=[('/joint_states', '/dummy_joint_states')]  # 重映射以避免冲突
     )
 
-    # Get URDF via xacro
-    robot_description_content = Command(
-        [
-            PathJoinSubstitution([FindExecutable(name="xacro")]),
-            " ",
-            PathJoinSubstitution(
-                [FindPackageShare("space_robot"), "description", "urdf", "space_robot.urdf.xacro"]
-            ),
-            " ",
-            "use_gazebo:=true",
-        ]
-    )
-    robot_description = {"robot_description": robot_description_content}
-
-    robot_state_publisher = Node(
-        package='robot_state_publisher',
-        executable='robot_state_publisher',
-        output="screen",
-        parameters=[robot_description]
-    )
-
-    gz_sim = IncludeLaunchDescription(
+    gz_sim_node = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             os.path.join(pkg_path, 'bringup', 'launch', 'gazebo.launch.py')),
-            # launch_arguments={'gz_args': PathJoinSubstitution([
-            #     pkg_path,
-            #     'models',
-            #     'worlds',
-            #     'space_world.sdf'
-            # ])}.items(),
-            launch_arguments={'gui': gui}.items(),
+            launch_arguments={'gui': gui, 'use_sim_time': use_sim_time}.items(),
     )
 
     rviz_config_file = PathJoinSubstitution(
         [FindPackageShare("space_robot"), 'bringup', 'config', 'space_robot.rviz']
     )
 
-    rviz = Node(
+    rviz_node = Node(
         package='rviz2',
         executable='rviz2',
         name='rviz2',
@@ -83,10 +62,9 @@ def generate_launch_description():
     )
 
     nodes = [
-        joint_state_publisher,
-        robot_state_publisher,
-        gz_sim,
-        rviz,
+        joint_state_publisher_node,
+        gz_sim_node,
+        rviz_node,
     ]
     
     return LaunchDescription(declared_arguments + nodes)

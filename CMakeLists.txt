@@ -27,12 +27,7 @@ if(BUILD_TESTING)
 endif()
 
 install(DIRECTORY
-  bringup
-  DESTINATION share/${PROJECT_NAME}/
-)
-
-install(DIRECTORY
-  description
+  bringup description
   DESTINATION share/${PROJECT_NAME}/
 )
 
