@@ -101,35 +101,53 @@ def generate_launch_description():
     start_gazebo_ros_image_bridge_node = Node(
         package='ros_gz_image',
         executable='image_bridge',
-        arguments=['/camera/image_raw'],
+        arguments=['/rgbd_camera/image'],
         output='screen',
     )
+
+    start_gazebo_ros_depth_image_bridge_node = Node(
+        package='ros_gz_image',
+        executable='image_bridge',
+        arguments=['/rgbd_camera/depth_image'],
+        output='screen',
+    )
+
+    start_gazebo_ros_point_cloud_bridge_node = Node(
+        package='ros_gz_point_cloud',
+        executable='pointcloud_bridge',
+        arguments=['/rgbd_camera/points'],
+        output='screen',
+    )
+
+    controller_config = PathJoinSubstitution([
+        FindPackageShare('space_robot'),
+        'bringup/config/controllers.yaml'
+    ])
 
     controller_manager_node = Node(
         package='controller_manager',
         executable='ros2_control_node',
         parameters=[
             {'use_sim_time': use_sim_time},  # 如果使用 Gazebo/Ignition 仿真，设为 True
-            PathJoinSubstitution([
-                FindPackageShare('space_robot'),
-                'bringup/config/controllers.yaml'
-            ])
+            controller_config
         ],
-        output='screen',
-    )
-
-    robot_controller_spawner = Node(
-        package='controller_manager',
-        executable='spawner',
-        arguments=['forward_position_controller'],
-        output='screen',
-        condition=IfCondition(use_sim_time)
+        output='both',
     )
 
     joint_state_broadcaster_spawner = Node(
         package='controller_manager',
         executable='spawner',
-        arguments=['joint_state_broadcaster'],
+        # arguments=['joint_state_broadcaster'],
+        arguments=['joint_state_broadcaster', '--controller-manager', '/controller_manager'],
+        output='screen',
+        condition=IfCondition(use_sim_time)
+    )
+
+    robot_controller_spawner = Node(
+        package='controller_manager',
+        executable='spawner',
+        # arguments=['forward_position_controller'],
+        arguments=['forward_position_controller', '--controller-manager', '/controller_manager'],
         output='screen',
         condition=IfCondition(use_sim_time)
     )
@@ -155,7 +173,9 @@ def generate_launch_description():
 
         load_controllers_handler,
         start_gazebo_ros_bridge_node,
-        start_gazebo_ros_image_bridge_node
+        start_gazebo_ros_image_bridge_node,
+        start_gazebo_ros_depth_image_bridge_node,
+        # start_gazebo_ros_point_cloud_bridge_node
     ]
    
     return LaunchDescription(declared_arguments + nodes)

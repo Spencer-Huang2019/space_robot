@@ -4,7 +4,7 @@
     <xacro:macro name="depth_camera_gazebo" params="camera_name">
 
         <gazebo reference="${camera_name}_link">
-            <sensor name="camera" type="camera">
+            <!-- <sensor name="camera" type="camera">
                 <always_on>true</always_on>
                 <visualize>true</visualize>
                 <update_rate>30</update_rate>
@@ -18,20 +18,65 @@
                             <height>1080</height>
                             <format>R8G8B8</format>
                         </image>
+                        <depth_camera>
+                            <output>depths</output>
+                        </depth_camera>
                         <clip>
                             <near>0.02</near>
                             <far>300</far>
                         </clip>
                         <noise>
                             <type>gaussian</type>
-                            <!-- Noise is sampled independently per pixel on each frame.
-                                That pixel's noise value is added to each of its color
-                                channels, which at that point lie in the range [0,1]. -->
                             <mean>0.0</mean>
                             <stddev>0.007</stddev>
                         </noise>
                 </camera>
+            </sensor> -->
+
+            <sensor name="rgbd_camera" type="rgbd_camera">
+                <pose relative_to='front_depth_cam_optical_frame'>0 0 0 0 0 0</pose>
+                <always_on>true</always_on>
+                <visualize>true</visualize>
+                <update_rate>30</update_rate>
+                <topic>rgbd_camera</topic>
+                <gz_frame_id>camera_rgb_frame</gz_frame_id>
+                <camera name="intel_realsense_r200">
+                    <camera_info_topic>rgbd_camera/camera_info</camera_info_topic>
+                    <horizontal_fov>1.047</horizontal_fov>
+                    <image>
+                        <width>1920</width>
+                        <height>1080</height>
+                        <format>R8G8B8</format>
+                    </image>
+                    <clip>
+                        <near>0.02</near>
+                        <far>300</far>
+                    </clip>
+                    <noise>
+                        <type>gaussian</type>
+                        <!-- Noise is sampled independently per pixel on each frame.
+                            That pixel's noise value is added to each of its color
+                            channels, which at that point lie in the range [0,1]. -->
+                        <mean>0.0</mean>
+                        <stddev>0.007</stddev>
+                    </noise>
+                    <!-- RGBD相机特有配置 -->
+                    <depth_camera>
+                        <output>points</output>  <!-- 同时输出点云 -->
+                        <clip>
+                            <near>0.02</near>  <!-- 应与彩色相机一致 -->
+                            <far>300</far>
+                        </clip>
+                    </depth_camera>
+                </camera>
+                <plugin
+                    filename="RosGzPointCloud"
+                    name="ros_gz_point_cloud::PointCloud">
+                    <topic>points</topic>
+                    <frame_id>map</frame_id>
+                </plugin>
             </sensor>
+
         </gazebo>
 
     </xacro:macro>

@@ -5,7 +5,7 @@
     
     <link name="world"/> 
 
-    <xacro:include filename="$(find space_robot)/description/urdf/robot_model/robot_description.urdf.xacro"/>
+    <xacro:include filename="$(find space_robot)/description/urdf/robot_description.urdf.xacro"/>
     <xacro:srobot parent="world" prefix="{arg prefix}">
         <origin xyz="0 0 0" rpy="0 0 0"/>
     </xacro:srobot>
